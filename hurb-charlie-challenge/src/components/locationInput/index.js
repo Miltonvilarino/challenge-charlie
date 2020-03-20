@@ -13,6 +13,21 @@ export default function AvatarInput() {
     });
     const [loading, setLoading] = useState(false);
 
+    async function getLocationDataWithCoords(latitude, longitude) {
+        const response = await openGateApi.get('/json', {
+            params: {
+                q: `${latitude} ${longitude}`,
+                key: 'd779a1f87c2c4a0aa9eda2234f03d96f'
+            }
+        });
+        setLocationData({
+            location: {
+                city: response.data.results[0].components.city,
+                state: response.data.results[0].components.state
+            }
+        });
+    }
+
     useEffect(() => {
         navigator.geolocation.getCurrentPosition(
             ({ coords: { latitude, longitude } }) => {
@@ -20,22 +35,7 @@ export default function AvatarInput() {
                     region: { latitude, longitude }
                 });
                 setLoading(true);
-                async function getCoordsData() {
-                    const response = await openGateApi.get('/json', {
-                        params: {
-                            q: `${latitude} ${longitude}`,
-                            key: 'c63386b4f77e46de817bdf94f552cddf'
-                        }
-                    });
-                    setLocationData({
-                        location: {
-                            city: response.data.results[0].components.city,
-                            state: response.data.results[0].components.state
-                        }
-                    });
-                }
-
-                if (loading) getCoordsData();
+                if (loading) getLocationDataWithCoords(latitude, longitude);
             },
             () => {
                 toast.error('Você precisa autorizar a localização no brownser');
@@ -47,6 +47,7 @@ export default function AvatarInput() {
             }
         );
     }, [loading]);
+
     return (
         <Container>
             <img src={RadarIconInput} alt="Radar" />
